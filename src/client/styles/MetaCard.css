@@ -1,0 +1,148 @@
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.metaCardContainer {
+  min-width: 300px;
+  display: inline-block;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  height: auto;
+  background-color: white;
+  box-shadow: 0px 0px 5px grey;
+  border-radius: 25px;
+  user-select: none;
+  right: 5%;
+}
+
+.metaCardFieldContainer {
+  padding: 1em 2em 1em 2em;
+}
+
+.metaCardMetaText {
+  margin-top: 1em;
+  padding-left: 1em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #8080804d;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+
+.metaCardInput {
+  padding: 0.5em 1em 0.5em 1em;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  width: 85%;
+  color: #2c3e50;
+  font-size: 13px;
+  outline: none;
+  resize: none;
+  overflow: auto;
+}
+
+.roadmapPublishButtonContainer {
+  text-align: center;
+  padding-top: 1em;
+  transform: translateY(5px);
+}
+
+.roadmapPublishButton {
+  background: #fc466b;
+  /* fallback for old browsers */
+  background: -webkit-linear-gradient(to right, #3f5efb, #fc466b);
+  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to right, #3f5efb, #fc466b);
+  /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  padding: 0.75em 1em 0.75em 1em;
+  border-radius: 20px;
+  color: white;
+  cursor: pointer;
+}
+
+img {
+  width: 20px;
+  height: auto;
+}
+
+.metaCardTabs {
+  position: absolute;
+  top: 3.5em;
+  left: -2.25em;
+  cursor: pointer;
+  margin-top: -2px;
+}
+.metaCardTabContainer {
+  box-shadow: 0px 0px 5px #ccc;
+  background: white;
+  border-radius: 3px;
+  padding: 0.75em 0.5em 0.75em 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.metaCardFieldText {
+  font-weight: 500;
+  padding-bottom: 1rem;
+}
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  appearance: none;
+  outline: 0;
+  box-shadow: none;
+  border: 0 !important;
+  background: white;
+  background-image: none;
+}
+/* Remove IE arrow */
+select::-ms-expand {
+  display: none;
+}
+/* Custom Select */
+.select {
+  position: relative;
+  display: flex;
+  box-shadow: 0px 0px 5px #ccc;
+  height: 3em;
+  line-height: 3;
+  background: white;
+  overflow: hidden;
+  border-radius: 0.25em;
+}
+select {
+  flex: 1;
+  padding: 0 0.5em;
+  color: black;
+  cursor: pointer;
+}
+/* Arrow */
+.select::after {
+  content: "\25BC";
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 1em;
+  background: white;
+  cursor: pointer;
+  pointer-events: none;
+  -webkit-transition: 0.25s all ease;
+  -o-transition: 0.25s all ease;
+  transition: 0.25s all ease;
+}
+/* Transition */
+.select:hover::after {
+  color: #f39c12;
+}
+.MetaCardIcon.selected {
+  fill: #e546ff;
+}
+
+.MetaCardIcon {
+  width: 20px;
+  height: auto;
+}

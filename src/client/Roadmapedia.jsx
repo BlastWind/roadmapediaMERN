@@ -9,15 +9,16 @@ import focused from "./svgs/network_purple.svg";
 import manual from "./svgs/manual.svg";
 import close from "./svgs/close.svg";
 import check from "./svgs/check.svg";
-import preview from "./svgs/preview.svg";
+import { eyeSvg, focusSvg, manualSvg } from "./svgs/SVGExports.js";
 import preview_purple from "./svgs/preview_purple.svg";
 import open_new_tab from "./svgs/open_new_tab.png";
 import theming from "./svgs/painting.svg";
 import theming_purple from "./svgs/painting_purple.svg";
-
+import loadingGif from "./svgs/giphy2.gif";
 import alphabetT from "./svgs/t-alphabet.svg";
 import alphabetTPurple from "./svgs/t-alphabet-purple.svg";
 import purpleLink from "./svgs/purpleLink.svg";
+import colorPalette from "./svgs/color-palette.svg";
 import link from "./svgs/link.svg";
 import { textArrToHTML } from "./helperFunctions/StringHelperFunctions.js";
 import {
@@ -46,7 +47,8 @@ import {
   nodeMouseUp,
   textNodeClick,
   textNodeDblClick,
-  circleNodeClick
+  circleNodeClick,
+  saveTransitionNodeData
 } from "./helperFunctions/mouseFunctions.js";
 
 import {
@@ -75,8 +77,10 @@ import {
   setOptionGroupTextMouseEvents
 } from "./helperFunctions/optionGroupClicks.js";
 import "./styles/RmapCreatorToolBar.scss";
+import "./styles/toggleButton.scss";
 import PreviewCard from "./RoadmapediaSubComponents/PreviewCard.jsx";
 import ColorCard from "./RoadmapediaSubComponents/ColorCard.jsx";
+import MetaCard from "./RoadmapediaSubComponents/MetaCard.jsx";
 
 const initialNodes = [
   {
@@ -90,8 +94,8 @@ const initialNodes = [
     backgroundColor: "white",
     strokeColor: "black",
     groupID: null,
-    textSize: 12,
-    textFont: "sans-serif"
+    textColor: "black",
+    textSize: 15
   },
   {
     type: "circle",
@@ -102,10 +106,13 @@ const initialNodes = [
     x: 300,
     y: 200,
     storedInfo: {
-      url: null,
-      info: null,
-      picture: null,
-      title: null
+      url: "",
+      info:
+        "Join Coursera for free and learn online. Build skills with courses from top universities like Yale, Michigan, Stanford, and leading companies like Google and IBM. Advance your career with degrees, certificates, Specializations, &amp; MOOCs in data science, computer science, business, and dozens of o",
+      picture:
+        "https://forked-besticon.herokuapp.com//icon?url=http://www.google.com&size=80..120..200",
+      title:
+        "Coursera | Build Skills with Online Courses from Top InstitutionsListLoupe CopyLoupe CopyLoupe CopyChevron LeftChevron Right"
     },
     backgroundColor: "white",
     strokeColor: "black",
@@ -120,10 +127,10 @@ const initialNodes = [
     x: 300,
     y: 200,
     storedInfo: {
-      url: null,
-      info: null,
-      picture: null,
-      title: null
+      url: "",
+      info: "",
+      picture: "",
+      title: ""
     },
     backgroundColor: "white",
     strokeColor: "black",
@@ -132,7 +139,12 @@ const initialNodes = [
 ];
 
 const initialLinks = [
-  { source: initialNodes[0], target: initialNodes[1], linkDistance: 250 }
+  {
+    source: initialNodes[0],
+    target: initialNodes[1],
+    linkDistance: 250,
+    linkColor: "black"
+  }
 ];
 
 class GraphEditor extends Component {
@@ -143,7 +155,8 @@ class GraphEditor extends Component {
       focus: true,
       errMsg: "",
       preview: false,
-      theming: false
+      theming: false,
+      shouldViewText: false
     };
 
     this.nodes = initialNodes;
@@ -199,18 +212,42 @@ class GraphEditor extends Component {
     this.history = this.history.slice(0, this.historyStep + 1);
     this.history = this.history.concat([command]);
     this.historyStep += 1;
-    console.log(this.history);
+    console.log("new history", this.history);
   }
 
   undo() {
     if (this.historyStep !== 0) {
-      console.log(this.history[this.historyStep]);
       var inverseCommand = this.history[this.historyStep].inverse;
+      if (this.isFormShowing && !this.isTyping) {
+        //this.setError("Please save form before undo", 2000);
+        return;
+      }
       switch (inverseCommand.type) {
         case "delNode":
-          if (this.selectedNode.id === inverseCommand.node.id) {
+          if (
+            this.selectedNode &&
+            this.selectedNode.id === inverseCommand.node.id
+          ) {
+            if (this.selectedNode.type === "circle") {
+              this.lastClickedCircle = null;
+              this.optionG
+                .selectAll("circle.permanent")
+                .transition()
+                .duration(500)
+                .delay(this.isFormShowing ? 500 : 0)
+                .attr("r", 0);
+              this.optionG
+                .selectAll("image.permanent")
+                .transition()
+                .duration(500)
+                .delay(this.isFormShowing ? 500 : 0)
+                .attr("width", 0)
+                .attr("height", 0)
+                .attr("x", 0)
+                .attr("y", 0);
+            }
+
             this.selectedNode = null;
-            this.forceUpdate();
           }
           this.nodes = this.nodes.filter(n => n.id !== inverseCommand.node.id);
           break;
@@ -219,6 +256,14 @@ class GraphEditor extends Component {
           this.links = this.links.filter(
             l => l.index !== inverseCommand.link.index
           );
+          if (
+            this.selectedLink &&
+            this.selectedLink.index === inverseCommand.link.index
+          ) {
+            this.selectedLink = null;
+            this.restart();
+            this.forceUpdate();
+          }
 
           break;
 
@@ -233,11 +278,19 @@ class GraphEditor extends Component {
           break;
 
         case "delNodeLink":
+          console.log(inverseCommand.node.id, inverseCommand.links);
           this.nodes = this.nodes.filter(n => n.id !== inverseCommand.node.id);
           this.links = this.links.filter(l => {
-            return inverseCommand.links.indexOf(l) < 0;
+            //if l.index is found in any link in inverseCommand.links, return false
+            var keepLink = true;
+            inverseCommand.links.map(eachCommandLink => {
+              if (eachCommandLink.index === l.index) {
+                keepLink = false;
+              }
+            });
+            return keepLink;
           });
-
+          console.log("new", this.links);
           break;
 
         case "addNodeLink":
@@ -260,22 +313,47 @@ class GraphEditor extends Component {
               n.text = inverseCommand.text;
             }
           });
-
           break;
 
         case "modifyResourceNode":
+          // if we blurred form but it's still out and try to ctrl z
           this.nodes.map(n => {
             if (n.id === inverseCommand.node.id) {
-              n.description = inverseCommand.description;
-              n.storedInfo.url = inverseCommand.storedInfo.url;
+              this.setError("Node information Updated");
+              n.storedInfo = inverseCommand.storedInfo;
+              this.circleGroups.selectAll(".nodeImage").each(function(d) {
+                if (d.id !== inverseCommand.node.id) return;
+
+                if (
+                  !inverseCommand.node.storedInfo.picture ||
+                  inverseCommand.node.storedInfo.picture === ""
+                ) {
+                  // if there's nothing appended, href null
+                  d3.select(this).attr("href", null);
+                } else {
+                  d3.select(this).attr(
+                    "href",
+                    inverseCommand.storedInfo.picture
+                  );
+                }
+              });
             }
           });
 
           break;
+
+        case "modifyAttribute":
+          var { object, attribute, attributeValue } = inverseCommand;
+          object[attribute] = attributeValue;
+          break;
       }
       this.historyStep -= 1;
+    } else {
+      this.setError("Nothing to Undo");
+      return;
     }
     this.restart();
+    this.forceUpdate();
   }
 
   redo() {
@@ -314,10 +392,14 @@ class GraphEditor extends Component {
           break;
         case "delNodeLink":
           this.nodes = this.nodes.filter(n => n.id !== actionCommand.node.id);
-          this.nodes = this.links.filter(l => {
-            return actionCommand.links.indexOf(l) < 0;
+          this.links = this.links.filter(l => {
+            var existArray = actionCommand.links.map(eachLink => {
+              return eachLink.id === l.id;
+            });
+            if (existArray.includes(true)) {
+              return false;
+            } else return true;
           });
-
           break;
 
         case "modifyText":
@@ -332,15 +414,37 @@ class GraphEditor extends Component {
         case "modifyResourceNode":
           this.nodes.map(n => {
             if (n.id === actionCommand.node.id) {
-              n.description = actionCommand.description;
-              n.storedInfo.url = actionCommand.storedInfo.url;
+              this.setError("Node information Updated");
+              n.storedInfo = actionCommand.storedInfo;
+              this.circleGroups.selectAll(".nodeImage").each(function(d) {
+                if (d.id !== actionCommand.node.id) return;
+
+                if (
+                  !actionCommand.node.storedInfo.picture ||
+                  actionCommand.node.storedInfo.picture === ""
+                ) {
+                  // if there's nothing appended, href null
+                  d3.select(this).attr("href", null);
+                } else {
+                  d3.select(this).attr(
+                    "href",
+                    actionCommand.storedInfo.picture
+                  );
+                }
+              });
             }
           });
-
+          break;
+        case "modifyAttribute":
+          var { object, attribute, attributeValue } = actionCommand;
+          object[attribute] = attributeValue;
           break;
       }
 
       this.restart();
+      this.forceUpdate();
+    } else {
+      this.setError("Nothing to Redo");
     }
   }
 
@@ -472,6 +576,7 @@ class GraphEditor extends Component {
     });
 
     this.svg.call(zoom).on("dblclick.zoom", null);
+    //    .attr("transform", "scale(1.15)");
 
     d3.select(window)
       .on("keydown", function() {
@@ -539,10 +644,17 @@ class GraphEditor extends Component {
     this.circleGroups.attr("transform", d => getTranslateString(d.x, d.y));
 
     if (this.textBox.attr("x")) {
-      console.log(this.selectedNode.x, this.textInputCircle.x);
       this.textBox
         .attr("x", this.textInputCircle.x + 25)
         .attr("y", this.textInputCircle.y);
+
+      /* "y" used to add
++
+  (this.selectedNode.height -
+    this.selectedNode.text.length * this.selectedNode.textSize) /
+    2 -
+  this.selectedNode.textSize
+*/
     }
 
     if (this.selectedNode && this.selectedNode.type === "circle") {
@@ -555,6 +667,7 @@ class GraphEditor extends Component {
 
   restart() {
     var app = this;
+    const exitDuration = 400;
     var globalRadius = 35;
     d3.select("#firstNodeText").remove();
     if (this.nodes.length === 0) {
@@ -581,8 +694,9 @@ class GraphEditor extends Component {
     var pathExit = this.path.exit();
     pathExit
       .attr("opacity", 1)
+      .style("marker-end", null)
       .transition()
-      .duration(500)
+      .duration(exitDuration / 2)
       .attr("opacity", 0)
       .on("end", function() {
         d3.select(this).remove();
@@ -592,12 +706,40 @@ class GraphEditor extends Component {
     this.path = this.path
       .enter()
       .append("svg:path")
+      .merge(this.path);
+    this.path
       .attr("class", "link")
       .classed("selected", d => d === this.selectedLink)
+      .style("stroke", d => d.linkColor)
       .style("marker-end", "url(#end-arrow)")
       .on("mousedown", d => {
         if (d3.event.ctrlKey) return;
+        var duration = 500;
+        if (app.selectedNode && app.selectedNode.type === "circle") {
+          app.lastClickedCircle = null;
+          // if we were selecting circles, close them
+          if (app.isFormShowing) {
+            saveTransitionNodeData(app, app.lastClickedId);
+            closeForm(app);
+            closeNode(app);
+          }
 
+          app.optionG
+            .selectAll("circle.permanent")
+            .transition()
+            .duration(500)
+            .delay(app.isFormShowing ? 500 : 0)
+            .attr("r", 0);
+          app.optionG
+            .selectAll("image.permanent")
+            .transition()
+            .duration(500)
+            .delay(app.isFormShowing ? 500 : 0)
+            .attr("width", 0)
+            .attr("height", 0)
+            .attr("x", 0)
+            .attr("y", 0);
+        }
         // select link
         this.mousedownLink = d;
         this.selectedLink =
@@ -605,8 +747,7 @@ class GraphEditor extends Component {
         this.selectedNode = null;
         this.forceUpdate();
         this.restart();
-      })
-      .merge(this.path);
+      });
 
     this.rectGroups = this.rectGroups.data(
       this.nodes.filter(eachNode => eachNode.type === "text"),
@@ -619,7 +760,7 @@ class GraphEditor extends Component {
       .attr("background", "red")
       .attr("opacity", 1)
       .transition()
-      .duration(500)
+      .duration(exitDuration)
       .attr("opacity", 0)
       .on("end", function() {
         d3.select(this).remove();
@@ -642,15 +783,7 @@ class GraphEditor extends Component {
     circleGroupsExit
       .attr("opacity", 1)
       .transition()
-      .duration(500)
-      .attr("opacity", 0)
-      .on("end", function() {
-        d3.select(this).remove();
-      });
-    circleGroupsExit
-      .attr("opacity", 1)
-      .transition()
-      .duration(500)
+      .duration(exitDuration)
       .attr("opacity", 0)
       .on("end", function() {
         d3.select(this).remove();
@@ -668,7 +801,7 @@ class GraphEditor extends Component {
         return "clipPath" + i;
       })
       .append("circle")
-      .attrs({ cx: 75, cy: 20, r: globalRadius });
+      .attrs({ cx: 75, cy: 20, r: globalRadius - 1 });
 
     var circles = circleGroupsEnter
       .append("svg:circle")
@@ -684,8 +817,6 @@ class GraphEditor extends Component {
     circles
       .merge(d3.selectAll("circle.node"))
       .attr("stroke", function(d, i) {
-        console.log("HERE", app.selectedNode, d);
-
         if (app.selectedNode && d.id === app.selectedNode.id) {
           return "url(#svgGradient)";
         }
@@ -701,8 +832,8 @@ class GraphEditor extends Component {
       .append("svg:image")
       .attr("class", "nodeImage")
       .attrs({
-        width: globalRadius * 2,
-        height: globalRadius * 2,
+        width: globalRadius * 2 - 1,
+        height: globalRadius * 2 - 1,
         x: 40,
         y: -15
       })
@@ -711,26 +842,25 @@ class GraphEditor extends Component {
       });
 
     images.merge(d3.selectAll(".nodeImage")).each(function(d) {
-      var that = this;
-      if (!d.storedInfo.url || d.storedInfo.url === "") {
-        d3.select(this).attr("href", null);
-      } else {
-        var img = new Image();
-        img.onload = function() {
-          d3.select(this).attr("href", img.src);
-        };
-        img.src =
-          "https://forked-besticon.herokuapp.com/icon?url=" +
-          d.storedInfo.url +
-          "&size=80..120..200";
-
-        if (!d3.select(this).attr("href")) {
-          d3.select(this).attr(
-            "href",
-            "https://static.thenounproject.com/png/20724-200.png"
-          );
-        }
+      if (!d.storedInfo.picture || d3.select(this).attr("href") !== null) {
+        // if picture already there or don't have a picture
+        return;
       }
+      var img = new Image();
+      var pictureRef = this;
+      img.onload = function() {
+        d3.select(pictureRef).attr("href", img.src);
+      };
+      img.onerror = function() {
+        app.setError(
+          "Image not found, did you use a proper image address?",
+          2000
+        );
+        d3.select(pictureRef).attr("href", null);
+      };
+      img.src = d.storedInfo.picture;
+
+      d3.select(this).attr("href", loadingGif);
     });
     this.circleGroups = this.circleGroups.merge(circleGroupsEnter);
     this.circleGroups
@@ -752,17 +882,7 @@ class GraphEditor extends Component {
 
     textContainers = textContainers
       .merge(d3.selectAll("g.textContainer"))
-      .on("mousedown", d => {
-        // select node
-        this.mousedownNode = d;
-        this.selectedNode =
-          this.mousedownNode === this.selectedNode ? null : this.mousedownNode;
 
-        this.selectedLink = null;
-
-        //can't restart, if restart dblclick can't be detected
-        //restart();
-      })
       .on("mouseup", function(d, i) {
         nodeMouseUp(d, i, this, app);
       })
@@ -772,19 +892,20 @@ class GraphEditor extends Component {
         var nwords = d.text.length;
         return "-" + (nwords - 1) * 12;
       })
-      .style("transform", function(d) {
-        var bboxWidth = d3
-          .select(this)
-          .node()
-          .getBBox().width;
 
-        var bboxHeight = d3
-          .select(this)
-          .node()
-          .getBBox().height;
-        var toShiftX = 25;
-        var toShiftY = (d.height - bboxHeight) / 2 + 12.5;
-        return "translate(" + toShiftX + "px, " + toShiftY + "px)";
+      .on("click", function(d, i) {
+        textNodeClick(d, i, this, app);
+      })
+      .on("dblclick", function(d, i) {
+        updateStroke(app);
+        textNodeDblClick(d, i, this, app);
+        //updateStroke(app);
+      })
+      .on("mousedown", function(d, i) {
+        nodeMouseDown(d, i, this, app);
+      })
+      .on("click", function(d, i) {
+        textNodeClick(d, i, this, app);
       });
 
     var texts = textContainers.selectAll("text").data(d => d.text);
@@ -804,31 +925,60 @@ class GraphEditor extends Component {
       return a;
     });
 
-    textContainers.each(function(d, i) {
-      console.log(d.textSize, d3.select(this).selectAll("text"));
-      d3.select(this)
-        .selectAll("text")
-        .style("font-size", d.textSize)
-        .attr("y", (_, i) => d.textSize * i + (d.textSize - 12));
+    textContainers
+      .each(function(d, i) {
+        d3.select(this)
+          .selectAll("text")
+          .style("font-size", d.textSize + "px")
+          .style("fill", d.textColor)
+          .attr("y", (_, i) => d.textSize * i + (d.textSize - 12) + "px");
 
-      var eachTextHeight = d3
-        .select(this)
-        .select("text")
-        .node()
-        .getBBox().height;
-      var textGroup = d3.select(this).selectAll("text");
-      var widthArray = [];
-      textGroup.each(function() {
-        widthArray.push(
-          d3
-            .select(this)
-            .node()
-            .getBBox().width
-        );
+        var eachTextHeight = d3
+          .select(this)
+          .select("text")
+          .node()
+          .getBBox().height;
+        var textGroup = d3.select(this).selectAll("text");
+        var widthArray = [],
+          heightArray = [];
+        textGroup.each(function() {
+          heightArray.push(
+            d3
+              .select(this)
+              .node()
+              .getBBox().height
+          );
+          widthArray.push(
+            d3
+              .select(this)
+              .node()
+              .getBBox().width
+          );
+        });
+        //console.log(eachTextHeight);
+        d.width = Math.max(...widthArray) + 50;
+        //console.log(d.text);
+        d.height =
+          d.text.length === 1 && d.text[0] === ""
+            ? d.text.length * (d.textSize + 5) + d.textSize + 15
+            : d.text.length * Math.max(...heightArray) + d.textSize + 15;
+      })
+      .style("transform", function(d) {
+        console.log("triggered again?");
+
+        var bboxWidth = d3
+          .select(this)
+          .node()
+          .getBBox().width;
+
+        var bboxHeight = d3
+          .select(this)
+          .node()
+          .getBBox().height;
+        var toShiftX = 25;
+        var toShiftY = (d.height - bboxHeight) / 2 + 12.5;
+        return "translate(" + toShiftX + "px, " + toShiftY + "px)";
       });
-      d.width = Math.max(...widthArray) + 50;
-      d.height = d.text.length * eachTextHeight + 25;
-    });
 
     rect
       .merge(d3.selectAll("rect.node"))
@@ -836,8 +986,8 @@ class GraphEditor extends Component {
         class: "node",
         rx: 6,
         ry: 6,
-        width: d => d.width,
-        height: d => d.height,
+        width: d => d.width + "px",
+        height: d => d.height + "px",
         fill: "white"
       })
       .style("stroke-width", 2)
@@ -848,7 +998,6 @@ class GraphEditor extends Component {
         return d.strokeColor;
       })
       .attr("fill", d => d.backgroundColor)
-
       .on("click", function(d, i) {
         textNodeClick(d, i, this, app);
       })
@@ -872,13 +1021,24 @@ class GraphEditor extends Component {
 
     this.force.nodes(this.nodes);
 
+    if (this.state.focus)
+      this.force.force(
+        "link",
+        d3
+          .forceLink(this.links)
+          .id(d => d.id)
+          .distance(function(d) {
+            return d.linkDistance;
+          })
+      );
+
     this.force.alphaTarget(0.3).restart();
   }
 
   toggleFocus = () => {
     var app = this;
     var prevFocus = this.state.focus;
-    this.setState({ focus: !this.state.focus });
+
     if (prevFocus === false) {
       this.force = d3
         .forceSimulation(this.nodes)
@@ -908,10 +1068,17 @@ class GraphEditor extends Component {
     }
 
     this.previousTransform = d3.select("g.gContainer").attr("transform");
-    this.restart();
+    this.setState({ focus: !this.state.focus }, () => {
+      app.restart();
+    });
   };
 
   togglePreview = () => {
+    if (this.isFormShowing) {
+      this.setError("Please submit form before previewing roadmap", 4000);
+      return;
+    }
+
     var app = this;
     var previousPreview = this.state.preview;
 
@@ -924,6 +1091,7 @@ class GraphEditor extends Component {
 
       if (isTransitionCircleShowing(app)) {
         if (this.isFormShowing) {
+          saveTransitionNodeData(app, app.lastClickedId);
           closeForm(app);
           closeNode(app);
         }
@@ -948,6 +1116,14 @@ class GraphEditor extends Component {
       }
     } else {
       this.setError("Preview Mode Disabled", 1000);
+      if (this.state.shouldViewText) {
+        this.setState({ shouldViewText: false }, () => {
+          d3.selectAll("g.circleGroup")
+            .selectAll("foreignObject")
+            .remove();
+        });
+      }
+
       this.setState({ preview: !this.state.preview }, () => {
         //.on("end", restart());
         if (app.selectedNode && app.selectedNode.type === "circle") {
@@ -965,29 +1141,336 @@ class GraphEditor extends Component {
     }
   };
 
-  changeTextSize = newTextSize => {
-    if (this.selectedNode) {
-      if (this.selectedNode.textSize !== newTextSize) {
-        this.selectedNode.textSize = newTextSize;
-        this.restart();
+  changeAttribute = (objectType, objectAttribute, newAttributeValue) => {
+    var prevAttributeValue = this["selected" + objectType][objectAttribute];
+    this["selected" + objectType][objectAttribute] = newAttributeValue;
+    var command = {
+      action: {
+        type: "modifyAttribute",
+        object: this["selected" + objectType],
+        attribute: objectAttribute,
+        attributeValue: newAttributeValue
+      },
+      inverse: {
+        type: "modifyAttribute",
+        object: this["selected" + objectType],
+        attribute: objectAttribute,
+        attributeValue: prevAttributeValue
       }
-      this.selectedNode.textSize = newTextSize;
+    };
+    this.storeToHistory(command);
+    this.restart();
+    this.forceUpdate();
+  };
 
-      this.restart();
+  onLoadIt = (
+    app,
+    lastClickedId,
+    newClickedId,
+    newInputValue,
+    selectedNode
+  ) => {
+    app.showModal = false;
+    app.forceUpdate();
+
+    if (!newInputValue.includes("http") & newInputValue.includes("www")) {
+      newInputValue = "http://" + newInputValue;
     }
-    this.forceUpdate();
+
+    function rebindTransitionNodesImage() {
+      app.transitionGs = app.optionG
+        .selectAll("g")
+        .data(app.transitionGDataset);
+      d3.selectAll("image.permanent").attrs({ href: d => d.href });
+    }
+    // if user is just opening and closing, don't do shit
+    if (newInputValue === selectedNode.storedInfo.url) return;
+    if (
+      selectedNode.storedInfo.url.trim().length === 0 &&
+      newInputValue.trim().length === 0
+    ) {
+      return;
+    }
+    // else, prompt if user wants to load associating information
+    var prevInfo = JSON.parse(JSON.stringify(selectedNode.storedInfo));
+
+    // if load all, fetch all and set all, then, storeToHistory new URL, and everything together
+    const loadInfo = newClickedId !== 1;
+    const loadPicture = newClickedId !== 2;
+    const loadTitle = newClickedId !== 3;
+    const fetchImageURL =
+      "https://forked-besticon.herokuapp.com//icon?url=" +
+      newInputValue +
+      "&size=80..120..200";
+    if (app.selectedNode && selectedNode.id === app.selectedNode.id) {
+      if (loadInfo) {
+        app.transitionGDataset[1].href = loadingGif;
+        app.transitionGDataset[1].isLoading = true;
+      }
+      if (loadPicture) {
+        app.transitionGDataset[2].href = loadingGif;
+        app.transitionGDataset[2].isLoading = true;
+      }
+      if (loadTitle) {
+        app.transitionGDataset[3].href = loadingGif;
+        app.transitionGDataset[3].isLoading = true;
+      }
+      rebindTransitionNodesImage();
+    }
+
+    // update node URL
+    selectedNode.storedInfo.url = newInputValue;
+
+    // load title & info, on end, store new title, info, picture to history
+    fetch("/api/getTitleAtURL", {
+      method: "POST", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ url: newInputValue })
+    })
+      .then(res => res.json())
+      .then(json => {
+        if (json.message === "THIS IS AN ERROR") {
+          app.setError("Website unfetchable, perhaps URL invalid", 2000);
+        } else {
+          var errorBuilder = "Node ";
+          if (loadInfo) errorBuilder += "Info ";
+          if (loadTitle) errorBuilder += "Title ";
+          if (loadPicture) errorBuilder += "Picture ";
+          errorBuilder += "Updated";
+          app.setError(errorBuilder, 2000);
+          if (loadInfo) {
+            selectedNode.storedInfo.info = json.metaDescription
+              ? json.metaDescription.substring(0, 300)
+              : json.metaDescription;
+          }
+          if (loadTitle) {
+            selectedNode.storedInfo.title = json.title
+              ? json.title.substring(0, 150)
+              : json.title;
+          }
+        }
+
+        app.transitionGDataset[1].href =
+          "https://image.flaticon.com/icons/png/512/84/84380.png";
+        app.transitionGDataset[1].isLoading = false;
+        app.transitionGDataset[3].href =
+          "https://www.svgimages.com/svg-image/s6/t-alphabet-256x256.png";
+        app.transitionGDataset[3].isLoading = false;
+        rebindTransitionNodesImage();
+
+        var newStoredInfo = {
+          url: newInputValue,
+          picture: loadPicture
+            ? fetchImageURL
+            : selectedNode.storedInfo.picture,
+          info:
+            loadInfo && !json.message
+              ? json.metaDescription
+              : selectedNode.storedInfo.info,
+          title:
+            loadTitle && json.message
+              ? json.title
+              : selectedNode.storedInfo.title
+        };
+        var command = {
+          action: {
+            type: "modifyResourceNode",
+            node: selectedNode,
+            storedInfo: newStoredInfo
+          },
+          inverse: {
+            type: "modifyResourceNode",
+            node: selectedNode,
+            storedInfo: prevInfo
+          }
+        };
+        app.storeToHistory(command);
+      });
+
+    if (loadPicture) {
+      var pictureRef = d3
+        .selectAll(".nodeImage")
+        .filter(d => d.id === selectedNode.id);
+
+      var img = new Image();
+      img.onload = function() {
+        pictureRef.attr("href", img.src);
+        app.transitionGDataset[2].href =
+          "https://cdn1.iconfinder.com/data/icons/social-17/48/photos2-512.png";
+        app.transitionGDataset[2].isLoading = false;
+        selectedNode.storedInfo.picture = img.src;
+        rebindTransitionNodesImage();
+      };
+
+      img.onerror = function() {};
+      pictureRef.attr("href", loadingGif);
+      img.src = fetchImageURL;
+    }
+  };
+  onNoLoad = (
+    app,
+    lastClickedId,
+    newClickedId,
+    newInputValue,
+    selectedNode
+  ) => {
+    app.showModal = false;
+    app.forceUpdate();
+    var app = this;
+    this.selectedNode.storedInfo.url = newInputValue;
+    var command = {
+      action: {
+        type: "modifyResourceNode",
+        node: selectedNode,
+        storedInfo: selectedNode.storedInfo
+      },
+      inverse: {
+        type: "modifyResourceNode",
+        node: selectedNode,
+        storedInfo: prevInfo
+      }
+    };
+    this.storeToHistory(command);
   };
 
-  changeBackgroundColor = color => {
-    this.selectedNode.backgroundColor = color;
-    this.restart();
-    this.forceUpdate();
+  toggleViewTextButton = () => {
+    var globalRadius = 35;
+    if (this.state.shouldViewText) {
+      d3.selectAll("g.circleGroup")
+        .selectAll("foreignObject")
+        .remove();
+    } else {
+      d3.selectAll("g.circleGroup").each(function(d, i) {
+        var textCardContainer = d3
+          .select(this)
+          .append("foreignObject")
+          .style("max-width", "200px")
+          .attrs({ x: "-25px", y: "20px", width: "200px", height: "1000px" });
+
+        // max width - min width = padding + border + etc
+        var textCard = textCardContainer
+          .append("xhtml:div")
+          .attrs({ class: "speechBubbleDiv" })
+          .style("min-width", "178px")
+          .style("max-width", "200px");
+
+        var textInfo = textCard
+          .append("xhtml:p")
+          .html(d.storedInfo.info)
+          .style("font-size", "13px");
+
+        var triangle = textCardContainer
+          .append("xhtml:div")
+          .attrs({ class: "triangleDiv" });
+        var ay = d3.select(".gContainer").attr("transform");
+
+        var scaleToMultiplyBy;
+        if (!ay) {
+          scaleToMultiplyBy = 1;
+        } else if (ay.indexOf("scale(") === -1) {
+          scaleToMultiplyBy = 1;
+        } else {
+          scaleToMultiplyBy = ay.substring(
+            ay.indexOf("scale(") + 6,
+            ay.lastIndexOf(")")
+          );
+        }
+
+        var bound = textCard.node().getBoundingClientRect();
+
+        textCardContainer.attrs({
+          height: (bound.height * 1) / scaleToMultiplyBy + 10 + "px"
+        });
+      });
+    }
+
+    this.setState({ shouldViewText: !this.state.shouldViewText });
+    // for each cirlcegroup
   };
 
-  changeStrokeColor = color => {
-    this.selectedNode.strokeColor = color;
-    this.restart();
-    this.forceUpdate();
+  colorPaletteClick = event => {
+    var colorPaletteRef = event.target;
+    var colorPaletteTransformValue = d3
+      .select(colorPaletteRef)
+      .style("transform");
+    var className = d3.select(".colorCardContainer").node().className;
+    const pathCardHeight = 180,
+      resourceCardHeight = 330,
+      textCardHeight = 570;
+
+    if (
+      colorPaletteTransformValue !== "none" &&
+      !colorPaletteTransformValue.includes("rotate(0deg)") &&
+      !colorPaletteTransformValue.includes("rotate(45deg)")
+    ) {
+      return;
+    }
+    if (
+      colorPaletteTransformValue === "none" ||
+      colorPaletteTransformValue.includes("rotate(0deg)")
+    ) {
+      // hide
+      d3.select(colorPaletteRef)
+        .style("transform", "rotate(0deg)")
+        .transition()
+        .duration(750)
+        .style("transform", "rotate(45deg)");
+
+      d3.select(".colorCardContainer")
+        .style("overflow", "hidden")
+        .style("opacity", 1)
+        .transition()
+        .duration(750)
+        .style("width", "0px")
+        .style("height", "0px")
+        .style("margin-top", () => {
+          if (className.includes("text")) {
+            return textCardHeight / 2 + "px";
+          }
+          if (className.includes("path")) {
+            return pathCardHeight / 2 + "px";
+          }
+          return resourceCardHeight / 2 + "px";
+        })
+        .style("opacity", 0)
+        .on("end", () => {
+          d3.select(colorPaletteRef).style(
+            "box-shadow",
+            "0px 0px 11px 2px #87d5d6"
+          );
+        });
+    } else if (colorPaletteTransformValue.includes("rotate(45deg)")) {
+      d3.select(colorPaletteRef)
+        .style("transform", "rotate(45deg)")
+        .transition()
+        .duration(750)
+        .style("transform", "rotate(0deg)");
+
+      d3.select(".colorCardContainer")
+        .transition()
+        .duration(750)
+        .style("margin-top", "0px")
+        .style("width", "250px")
+        .style("height", () => {
+          if (className.includes("text")) {
+            return textCardHeight + "px";
+          }
+          if (className.includes("path")) {
+            return pathCardHeight + "px";
+          }
+          return resourceCardHeight + "px";
+        })
+        .style("opacity", 1)
+        .on("end", function() {
+          d3.select(this)
+            .style("width", null)
+            .style("height", null)
+            .style("opacity", null);
+          d3.select(colorPaletteRef).style("box-shadow", null);
+        });
+    }
   };
 
   render() {
@@ -1002,7 +1485,6 @@ class GraphEditor extends Component {
     if (this.state.errMsg === "") {
       errDisplay = null;
     }
-    var colorArray = d3.schemeCategory10.slice(0, 8);
     return (
       <React.Fragment>
         <div id="editorsContainer" className="">
@@ -1011,40 +1493,98 @@ class GraphEditor extends Component {
           ) : null}
           <div className="GraphEditorContainer" />
           <div className="errMsg">{errDisplay}</div>
-          {!this.state.preview && this.selectedNode ? (
-            <ColorCard
-              selectedNode={this.selectedNode}
-              type={this.selectedNode.type}
-              textSize={
-                this.selectedNode.type === "text"
-                  ? this.selectedNode.textSize
-                  : null
-              }
-              changeTextSize={this.changeTextSize}
-              changeBackgroundColor={this.changeBackgroundColor}
-              changeStrokeColor={this.changeStrokeColor}
-            />
+          {!this.state.preview && !this.selectedNode && !this.selectedLink ? (
+            <MetaCard />
+          ) : null}
+
+          {!this.state.preview && (this.selectedNode || this.selectedLink) ? (
+            <div className="colorCardContainerOuter">
+              <ColorCard
+                selectedNode={this.selectedNode}
+                selectedLink={this.selectedLink}
+                textSize={
+                  this.selectedNode && this.selectedNode.type === "text"
+                    ? this.selectedNode.textSize
+                    : null
+                }
+                changeAttribute={this.changeAttribute}
+              />
+              <img
+                className="colorCardToggle"
+                src={colorPalette}
+                onClick={this.colorPaletteClick}
+              />
+            </div>
+          ) : null}
+          {this.state.preview ? (
+            <div
+              className="toggleAllTextsButtonWrapper"
+              onClick={this.toggleViewTextButton}
+            >
+              <a className="fancy-button pop-onhover bg-gradient1">
+                {this.state.shouldViewText ? (
+                  <span>Hide All Resource Node Texts</span>
+                ) : (
+                  <span>View All Resource Node Texts</span>
+                )}
+              </a>
+            </div>
           ) : null}
 
           {this.state.preview &&
           this.selectedNode &&
           this.selectedNode.type === "circle" ? (
-            <PreviewCard node={this.selectedNode.storedInfo} />
+            <React.Fragment>
+              <PreviewCard node={this.selectedNode.storedInfo} />
+            </React.Fragment>
           ) : null}
+
+          {this.showModal ? (
+            <div className="modalContainer-outer">
+              <div className="modalContainer">
+                <div className="modalContainer-inner">
+                  URL changed, fetch related information?
+                </div>
+                <div>
+                  <div className="modalContainerBtnContainer">
+                    <button className="btn ok">Sure</button>
+                    <button className="btn no">Nope</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <div className="toolbar">
-            <img className="icon" onClick={this.toggleManual} src={manual} />
-            <img
-              className="icon"
-              id="focusIcon"
-              src={this.state.focus ? focused : notFocused}
-              onClick={this.toggleFocus}
-            />
-            <img
-              className="icon"
-              id="previewIcon"
-              src={this.state.preview ? preview_purple : preview}
-              onClick={this.togglePreview}
-            />
+            <div className="iconContainer" onClick={this.toggleManual}>
+              {manualSvg(this.state.manual)}
+              <span
+                className={
+                  !this.state.manual ? "iconName" : "iconName selected"
+                }
+              >
+                Manual
+              </span>
+            </div>
+            <div className="iconContainer" onClick={this.toggleFocus}>
+              {focusSvg(this.state.focus)}
+              <span
+                className={!this.state.focus ? "iconName" : "iconName selected"}
+                style={{ top: "5px", position: "relative" }}
+              >
+                {this.state.focus ? "Force Enabled" : "Force Disabled"}
+              </span>
+            </div>
+            <div className="iconContainer" onClick={this.togglePreview}>
+              {eyeSvg(this.state.preview)}
+              <span
+                className={
+                  !this.state.preview ? "iconName" : "iconName selected"
+                }
+              >
+                {this.state.preview ? "Preview Enabled" : "Preview Disabled"}
+              </span>
+            </div>
             {/*<img
               className="icon"
               id="themeIcon"

@@ -6,25 +6,21 @@ import {
   updateBasePeriod
 } from "./TransitionNodesHelperFunctions.js";
 
-import {onTransitionNodeClick} from "./mouseFunctions.js"
+import { onTransitionNodeClick } from "./mouseFunctions.js";
 
 export function updateStroke(app) {
-  console.log("do we have selectedNode?", app.selectedNode);
   var allNodeSelection = d3.selectAll(".node");
-  console.log("our selection", allNodeSelection);
   if (!app.selectedNode) {
     // if no selected node,
     allNodeSelection.each(function(d) {
-      d3.select(this).attr("stroke",d.strokeColor);
+      d3.select(this).attr("stroke", d.strokeColor);
     });
     return;
   }
 
   allNodeSelection.each(function(eachNodeData) {
-    console.log(eachNodeData.id === app.selectedNode.id, eachNodeData);
     if (eachNodeData.id === app.selectedNode.id) {
       var prevStyle = d3.select(this).attr("stroke");
-      console.log(prevStyle);
       if (prevStyle === "url(#svgGradient)") {
         d3.select(this).attr("stroke", eachNodeData.strokeColor);
       } else {
@@ -40,7 +36,7 @@ export function restartOptionG(app) {
   var selectedNode = app.selectedNode;
 
   if (app.selectedNode) {
-    app.optionG.append("foreignObject");
+
     app.transitionGs = app.optionG.selectAll("g").data(app.transitionGDataset);
 
     if (app.shouldTransitionGsAnimate === true) {
@@ -86,7 +82,6 @@ export function restartOptionG(app) {
       .style("stroke", "black");
 
     var transitionImages = app.transitionGsEnter.append("svg:image").attrs({
-      href: d => d.href,
       width: 0,
       height: 0,
       x: 0,
@@ -126,5 +121,7 @@ export function restartOptionG(app) {
         x: -8,
         y: -8
       });
+
+    d3.selectAll("image.permanent").attrs({ href: d => d.href });
   }
 }

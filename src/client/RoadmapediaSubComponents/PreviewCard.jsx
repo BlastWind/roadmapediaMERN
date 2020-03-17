@@ -1,37 +1,35 @@
 import "../styles/PreviewCard.css";
 import React from "react";
-const PreviewCard = node => {
+const PreviewCard = props => {
+  const { node } = props;
   return (
-    <div id="bruh">
-      <div className="card">
-        <div className="cardGradient"></div>
-        <img className="cardImg" width="60" height="60" />
+    <div className="previewCardContainer">
+      <div className="cardGradient"></div>
+      <div className="imgContainer">
+        <img src={node.picture ? node.picture : null} className="cardImg" />
+      </div>
+      <br />
+      <div className="container">
+        <span className="title">{node.title ? node.title : "No Title"}</span>
         <br />
-        <span className="container">
-          <span className="title">
-            {node.node.title ? node.node.title : "No Title"}
-          </span>
-          <br />
-          {console.log(node.node.info)}
-          <span className="description">
-            {node.node.info ? node.node.info : "No Description"}
-          </span>
-          <br />
-          <span
-            className="description url"
-            onClick={() => {
-              if (node.node.url) {
-                if (node.node.url.includes("https://www.")) {
-                  window.open(node.node.url, "_blank");
-                } else if (node.node.url.includes("www.")) {
-                  window.open("https://" + node.node.url, "_blank");
-                } else window.open("https://www." + node.node.url, "_blank");
-              }
-            }}
-          >
-            <i className="fas fa-globe"></i>{" "}
-            {node.node.url ? " Open In New Tab" : "No URL"}
-          </span>
+        <span className="description">
+          {node.info ? node.info : "No Description"}
+        </span>
+        <br />
+        <span
+          className="description url"
+          onClick={() => {
+            if (node.url) {
+              if (node.url.includes("https://www.")) {
+                window.open(node.url, "_blank");
+              } else if (node.url.includes("www.")) {
+                window.open("https://" + node.url, "_blank");
+              } else window.open("https://www." + node.url, "_blank");
+            }
+          }}
+        >
+          <i className="fas fa-globe"></i>{" "}
+          {node.url ? " Open In New Tab" : "No URL"}
         </span>
       </div>
     </div>

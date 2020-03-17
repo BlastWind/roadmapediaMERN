@@ -1,35 +1,48 @@
+.colorCardToggle {
+  position: absolute;
+  right: 5%;
+  margin-right: -30px;
+  top: 50%;
+  margin-top: -20px;
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 50%;
+  padding: 5px;
+  box-shadow: 0px 0px 11px 2px grey;
+  cursor: pointer;
+}
+
 .colorCardContainer {
   position: absolute;
   padding-left: 5px;
   padding-right: 5px;
   border-radius: 25px;
   width: 250px;
-  height: 240px;
-  background: #c08ff58c;
+  height: 330px;
+  background: #fff;
   box-shadow: 5px 5px 5px grey;
-  right: 10%;
+  right: 5%;
   top: 50%;
-  transform: translateY(-120px);
-  font-family: sans-serif;
-  font-weight: 550;
+  transform: translateY(-165px);
+  font-weight: 600;
 }
 
-.text {
-  height: 315px;
-  transform: translateY(-160px);
+.colorCardContainer.text {
+  height: 570px;
+  transform: translateY(-285px);
 }
 
-.backgroundColorGrid {
-  padding-bottom: 1em;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  /*background: #e6e3ce;*/
-  justify-content: space-evenly;
-  align-content: space-between;
+.colorCardContainer.path {
+  height: 180px;
+  transform: translateY(-90px);
 }
 
-.strokeColorGrid {
+.backgroundColorGrid,
+.strokeColorGrid,
+.textColorGrid {
+  padding-left: 1rem;
+  padding-right: 1rem;
   padding-bottom: 1em;
   margin: 0;
   display: flex;
@@ -59,7 +72,7 @@
 
 .colorCardA {
   position: relative;
-  left: 10px;
+  left: 28px;
 }
 
 .colorCardContainerInner {
@@ -67,37 +80,22 @@
   top: 1.5em;
 }
 
-.backgroundColorBlock {
+.backgroundColorBlock,
+.strokeColorBlock,
+.textColorBlock {
+  border: 1px solid gray;
   cursor: pointer;
   margin-top: 12.5px;
   margin-left: 10px;
   margin-right: 10px;
-  width: 40px;
-  height: 20px;
+  width: 28px;
+  height: 13px;
   border-radius: 5px;
 }
 
-.strokeColorBlock {
-  cursor: pointer;
-  margin-top: 12.5px;
-  margin-left: 10px;
-  margin-right: 10px;
-  width: 40px;
-  height: 20px;
-  border-radius: 5px;
+div.selected {
+  box-shadow: 0 0 0 2px #00c4cc, inset 0 0 0 1px #fff;
 }
-
-.selected {
-  border: 3px solid transparent;
-height: 14px;
-width: 34px;
-  -moz-border-image: -moz-linear-gradient(top, red 0%, blue 100%);
-  -webkit-border-image: -webkit-linear-gradient(top, #f0e2d0 0%, #c08b62 100%);
-  border-image: linear-gradient(to right, red 0%, blue 100%);
-  -webkit-border-image-slice: 2;
-  border-image-slice: 2;
-}
-
 
 .selectedNumber {
   border: 1px solid;

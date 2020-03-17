@@ -10,8 +10,9 @@ export function getInitialSVG() {
   return d3
     .select(".GraphEditorContainer")
     .append("svg")
-    .style("width", window.innerWidth)
-    .attr("height", window.innerHeight);
+    .attr("class", "container")
+    .style("width", window.innerWidth + "px")
+    .attr("height", window.innerHeight + "px");
 }
 
 export function setSVGDefs(svg) {
@@ -104,6 +105,7 @@ export function getInitialDrag(mainRef) {
 }
 
 export function getInitialForce(mainRef) {
+  console.log(mainRef.links, "mainRef links");
   return d3
     .forceSimulation(mainRef.nodes)
     .force(

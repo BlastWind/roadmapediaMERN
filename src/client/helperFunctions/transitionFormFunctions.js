@@ -10,7 +10,6 @@ import {
 import { onTransitionNodeClick } from "./mouseFunctions.js";
 
 export function closeForm(app) {
-  console.log(app)
   d3.select("#currentInput")
     .transition()
     .duration(500)

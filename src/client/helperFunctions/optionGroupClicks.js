@@ -34,8 +34,8 @@ export function setOptionGroupTextMouseEvents(app, optionGroupT) {
           backgroundColor: "white",
           strokeColor: "black",
           groupID: null,
-          textSize: 12,
-          textFont: "sans-serif"
+          textSize: 15,
+          textColor: "black"
         };
         app.point = null;
         app.nodes.push(node);
@@ -83,8 +83,8 @@ export function setOptionGroupTextMouseEvents(app, optionGroupT) {
           backgroundColor: "white",
           strokeColor: "black",
           groupID: null,
-          textSize: 12,
-          textFont: "sans-serif"
+          textSize: 15,
+          textColor: "black"
         };
         app.point = null;
         app.nodes.push(node);
@@ -134,10 +134,10 @@ export function setOptionGroupLinkMouseEvents(app, optionGroupLink) {
           x: app.selectedNode.x + app.selectedNode.width + 100,
           y: app.selectedNode.y,
           storedInfo: {
-            url: null,
-            info: null,
-            picture: null,
-            title: null
+            url: "",
+            info: "",
+            picture: "",
+            title: ""
           },
           backgroundColor: "white",
           strokeColor: "black",
@@ -187,10 +187,10 @@ export function setOptionGroupLinkMouseEvents(app, optionGroupLink) {
           x: app.point[0],
           y: app.point[1],
           storedInfo: {
-            url: null,
-            info: null,
-            picture: null,
-            title: null
+            url: "",
+            info: "",
+            picture: "",
+            title: ""
           },
           backgroundColor: "white",
           strokeColor: "black",

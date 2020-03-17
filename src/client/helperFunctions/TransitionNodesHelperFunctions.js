@@ -128,26 +128,28 @@ export function makeTransitionNodeData(length) {
   var temp = [
     {
       href:
-        "https://cdn.pixabay.com/photo/2016/03/21/23/25/link-1271843_960_720.png"
+        "https://cdn.pixabay.com/photo/2016/03/21/23/25/link-1271843_960_720.png",
+      isLoading: false
     },
     {
-      href: "https://image.flaticon.com/icons/png/512/84/84380.png"
+      href: "https://image.flaticon.com/icons/png/512/84/84380.png",
+      isLoading: false
     }
   ];
   if (length === 4) {
-    console.log("uhh");
     temp.push(
       {
         href:
-          "https://cdn1.iconfinder.com/data/icons/social-17/48/photos2-512.png"
+          "https://cdn1.iconfinder.com/data/icons/social-17/48/photos2-512.png",
+        isLoading: false
       },
       {
-        href: "https://www.svgimages.com/svg-image/s6/t-alphabet-256x256.png"
+        href: "https://www.svgimages.com/svg-image/s6/t-alphabet-256x256.png",
+        isLoading: false
       }
     );
   }
 
-  console.log("to return", { temp });
   return temp;
 }
 

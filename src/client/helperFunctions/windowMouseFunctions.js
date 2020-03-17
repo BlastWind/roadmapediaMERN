@@ -40,7 +40,6 @@ export function windowClick(DOMEle, app) {
   app.inConnectMode = false;
 
   //    optionGroupConnector.attr("visibility", "hidden");
-  console.log("mousedown node", app.mousedownNode);
   //triggers if there is no mouse down node
   if (d3.event.ctrlKey && !app.mousedownNode) {
     if (app.state.preview) {
@@ -94,7 +93,6 @@ export function windowMouseMove(DOMEle, app) {
 }
 
 export function windowMouseUp(DOMEle, app) {
-  console.log("window moused up");
   // hide drag line
   if (app.mousedownNode)
     app.dragLine.classed("hidden", true).style("marker-end", "");
@@ -122,7 +120,6 @@ export function keydown(app) {
         app.setError("Can't edit during Preview Mode", 2000);
         return;
       }
-
       app.undo();
     }
   }
@@ -138,9 +135,30 @@ export function keydown(app) {
         app.setError("Can't edit during Preview Mode", 2000);
         return;
       }
+      if (app.isFormShowing) {
+        app.setError("Please submit form first", 2000);
+        return;
+      }
 
       if (app.selectedNode && !app.isTyping) {
-        console.log("TOOD: Close transition Gs");
+        if (app.selectedNode && app.selectedNode.type === "circle") {
+          app.lastClickedCircle = null;
+          app.optionG
+            .selectAll("circle.permanent")
+            .transition()
+            .duration(500)
+            .delay(app.isFormShowing ? 500 : 0)
+            .attr("r", 0);
+          app.optionG
+            .selectAll("image.permanent")
+            .transition()
+            .duration(500)
+            .delay(app.isFormShowing ? 500 : 0)
+            .attr("width", 0)
+            .attr("height", 0)
+            .attr("x", 0)
+            .attr("y", 0);
+        }
 
         var node = app.selectedNode;
         var links = splicelinksForNode(app, app.selectedNode);
@@ -162,9 +180,12 @@ export function keydown(app) {
           }
         };
         app.storeToHistory(command);
+        app.selectedLink = null;
+
         app.restart();
+
+        app.forceUpdate();
       }
-      app.selectedLink = null;
       //app.selectedNode = null;
 
       break;
