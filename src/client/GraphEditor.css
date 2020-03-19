@@ -1,7 +1,5 @@
-
-
+@import url("https://rsms.me/inter/inter.css");
 svg.container {
-  background-color: #ffd;
   cursor: default;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -37,18 +35,8 @@ text.id {
   font-weight: bold;
 }
 input {
-  border-radius: 20px;
-  border: 1px solid black;
-  outline: none;
-  overflow: none;
 }
 textarea {
-  border-radius: 10px;
-  border: 1px solid black;
-  outline: none;
-  overflow: hidden;
-  font-family: Open Sans, -apple-system, Helvetica;
-  resize: none;
 }
 img.picture {
   padding: 10px;
@@ -105,7 +93,7 @@ img.picture {
   outline: 0;
   resize: none;
   overflow: hidden;
-  background: white;
+  background: #ffffff;
   border: solid 1px #404040;
   font-family: Georgia, serif;
   font-size: 11px;
@@ -116,7 +104,7 @@ img.picture {
   max-width: 115px;
   border-radius: 5px;
   border: solid 1px #404040;
-  background: white;
+  background: #ffffff;
   font-family: Georgia, serif;
   font-size: 11px;
 }
@@ -125,7 +113,7 @@ img.picture {
   border-radius: 10px;
   max-width: 150px;
   border-color: black;
-  background-color: white;
+  background-color: #ffffff;
 }
 .resourceFormA {
   margin-left: 1rem;
@@ -155,22 +143,6 @@ img.picture {
   left: 64%;
   width: 15px;
   height: auto;
-}
-div.errMsginner {
-  display: inline-block;
-  margin: 0 auto;
-  background-color: orange;
-  color: white !important;
-  padding: 0.5rem;
-  border-radius: 1rem;
-}
-div.errMsg {
-  position: absolute;
-  top: 5rem;
-  text-align: center;
-  width: 100%;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
 }
 
 .modalContainer-outer {
@@ -205,7 +177,7 @@ div.errMsg {
 }
 .btn {
   border: none;
-  color: white;
+  color: #ffffff;
   padding: 12px 40px;
   text-align: center;
   text-decoration: none;
@@ -239,32 +211,102 @@ div.errMsg {
   justify-content: space-evenly;
 }
 
-
-.speechBubbleDiv {
-  position: absolute;
-  text-align: center;
-  border: 1px solid pink;
-  border-radius: 10px;
-  padding: 10px;
-  top: 8px;
-  background: #fbe2e2;
-}
-
 .speechBubbleDiv:after {
 }
 
-.triangleDiv {
+#textBoxP {
+  top: 17.5px;
   position: relative;
-  left: 85px;
-  width: 0;
-  height: 0;
-  border-left: 15px solid transparent;
-  border-right: 15px solid transparent;
-
-  border-bottom: 15px solid #fbe2e2;
 }
 
-#textBoxP{
-top: 17.5px;
-position: relative;
+circle.permanent {
+  fill: white;
+  box-shadow: 0px 0px 1px #ccc;
+  stroke: rgb(221, 221, 221);
+}
+
+image.permanent {
+}
+
+#currentInput {
+  box-shadow: rgb(221, 221, 221) 0px 0px 0px 1px inset;
+  border-radius: 5px;
+  color: rgb(102, 102, 102);
+  border: 0px;
+  outline: none;
+  height: 22px;
+  font-size: 12px;
+}
+textarea#currentInput {
+  resize: none;
+  height: 44px;
+  overflow: auto;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-family: Open Sans, -apple-system, Helvetica;
+  resize: none;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+  border-radius: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  border-radius: 5px;
+}
+
+div.errMsginner {
+  display: inline-block;
+
+  background-color: orange;
+  color: #ffffff !important;
+  padding: 0.5rem;
+  border-radius: 1rem;
+}
+div.errMsg {
+  position: absolute;
+  top: 5rem;
+  text-align: center;
+  width: 100%;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+div.errorMessageContainer {
+  position: absolute;
+  margin: 10px;
+  left: 10px;
+  top: 0;
+  text-align: center;
+  width: 300px;
+  font-family: "Segoe UI";
+}
+
+div.errorMessage {
+  background: #000000;
+  color: #c0c0c0;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-size-adjust: 100%;
+  margin-top: 10px;
+  border-radius: 5px;
+  box-sizing: 0px 0px 1px #ccc;
+  display: block;
+  font-size: 12px;
 }

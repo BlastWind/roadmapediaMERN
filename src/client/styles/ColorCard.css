@@ -6,11 +6,15 @@
   margin-top: -20px;
   width: 40px;
   height: 40px;
-  background: white;
+  background: #ffffff;
   border-radius: 50%;
   padding: 5px;
   box-shadow: 0px 0px 11px 2px grey;
   cursor: pointer;
+}
+
+.colorCardToggle.hidden {
+  box-shadow: 0px 0px 11px 2px #87d5d6;
 }
 
 .colorCardContainer {
@@ -24,18 +28,16 @@
   box-shadow: 5px 5px 5px grey;
   right: 5%;
   top: 50%;
-  transform: translateY(-165px);
+  transform: translateY(-50%);
   font-weight: 600;
 }
 
 .colorCardContainer.text {
   height: 570px;
-  transform: translateY(-285px);
 }
 
 .colorCardContainer.path {
   height: 180px;
-  transform: translateY(-90px);
 }
 
 .backgroundColorGrid,
@@ -83,16 +85,40 @@
 .backgroundColorBlock,
 .strokeColorBlock,
 .textColorBlock {
-  border: 1px solid gray;
   cursor: pointer;
   margin-top: 12.5px;
   margin-left: 10px;
   margin-right: 10px;
-  width: 28px;
-  height: 13px;
-  border-radius: 5px;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border-radius: 4px;
 }
-
+.colorInput {
+  width: 80%;
+  margin-left: 10%;
+  font-size: 12px;
+  color: rgb(102, 102, 102);
+  border: 0px;
+  outline: none;
+  height: 22px;
+  box-shadow: rgb(221, 221, 221) 0px 0px 0px 1px inset;
+  border-radius: 4px;
+  padding: 0px 7px;
+  box-sizing: border-box;
+}
+span.hexText {
+  position: absolute;
+  right: 13%;
+  font-size: 11px;
+  font-family: Menlo;
+  color: rgb(150, 150, 150);
+  font-weight: 400;
+  margin-top: 4px;
+}
+.colorInputContainer {
+  padding-bottom: 1rem;
+}
 div.selected {
   box-shadow: 0 0 0 2px #00c4cc, inset 0 0 0 1px #fff;
 }

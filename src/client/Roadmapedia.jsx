@@ -18,7 +18,6 @@ import loadingGif from "./svgs/giphy2.gif";
 import alphabetT from "./svgs/t-alphabet.svg";
 import alphabetTPurple from "./svgs/t-alphabet-purple.svg";
 import purpleLink from "./svgs/purpleLink.svg";
-import colorPalette from "./svgs/color-palette.svg";
 import link from "./svgs/link.svg";
 import { textArrToHTML } from "./helperFunctions/StringHelperFunctions.js";
 import {
@@ -91,10 +90,10 @@ const initialNodes = [
     text: [""],
     x: 100,
     y: 300,
-    backgroundColor: "white",
-    strokeColor: "black",
+    backgroundColor: "#FFFFFF",
+    strokeColor: "#000000",
     groupID: null,
-    textColor: "black",
+    textColor: "#000000",
     textSize: 15
   },
   {
@@ -106,7 +105,7 @@ const initialNodes = [
     x: 300,
     y: 200,
     storedInfo: {
-      url: "",
+      url: "https://www.google.com",
       info:
         "Join Coursera for free and learn online. Build skills with courses from top universities like Yale, Michigan, Stanford, and leading companies like Google and IBM. Advance your career with degrees, certificates, Specializations, &amp; MOOCs in data science, computer science, business, and dozens of o",
       picture:
@@ -114,8 +113,8 @@ const initialNodes = [
       title:
         "Coursera | Build Skills with Online Courses from Top InstitutionsListLoupe CopyLoupe CopyLoupe CopyChevron LeftChevron Right"
     },
-    backgroundColor: "white",
-    strokeColor: "black",
+    backgroundColor: "#FFFFFF",
+    strokeColor: "#000000",
     groupID: null
   },
   {
@@ -127,13 +126,13 @@ const initialNodes = [
     x: 300,
     y: 200,
     storedInfo: {
-      url: "",
-      info: "",
+      url: "https://www.google.com",
+      info: "Join Coursera for free and learn online. Buil",
       picture: "",
       title: ""
     },
-    backgroundColor: "white",
-    strokeColor: "black",
+    backgroundColor: "#FFFFFF",
+    strokeColor: "#000000",
     groupID: null
   }
 ];
@@ -143,7 +142,7 @@ const initialLinks = [
     source: initialNodes[0],
     target: initialNodes[1],
     linkDistance: 250,
-    linkColor: "black"
+    linkColor: "#000000"
   }
 ];
 
@@ -156,9 +155,12 @@ class GraphEditor extends Component {
       errMsg: "",
       preview: false,
       theming: false,
-      shouldViewText: false
+      shouldViewText: false,
+      isCardHidden: false,
+      errorMessages: []
     };
-
+    this.font = "Segoe UI";
+    this.backgroundColor = "#FFEED7";
     this.nodes = initialNodes;
     this.links = initialLinks;
 
@@ -483,6 +485,7 @@ class GraphEditor extends Component {
 
     // set up SVG & Defs
     this.svg = getInitialSVG();
+    this.svg.style("background", this.backgroundColor);
     setSVGDefs(this.svg);
     setSVGEvents(this.svg, app);
     var defs = this.svg.append("defs");
@@ -524,7 +527,7 @@ class GraphEditor extends Component {
 
     this.optionGroupConnector = this.optionGroup
       .append("rect")
-      .attrs({ height: 3, width: 0, x: -10, y: 25, stroke: "black" });
+      .attrs({ height: 3, width: 0, x: -10, y: 25, stroke: "#000000" });
 
     // don't need to select optionGroupRect again, so use var
     this.optionGroupG
@@ -535,8 +538,8 @@ class GraphEditor extends Component {
         y: 0,
         width: 135,
         height: 50,
-        stroke: "black",
-        fill: "white",
+        stroke: "#000000",
+        fill: "#FFFFFF",
         rx: 6
       })
       .style("stroke-width", 2);
@@ -544,7 +547,7 @@ class GraphEditor extends Component {
     // Border
     this.optionGroupG
       .append("line")
-      .attrs({ x1: 57.5, y1: 9, x2: 57.5, y2: 42, stroke: "black" })
+      .attrs({ x1: 57.5, y1: 9, x2: 57.5, y2: 42, stroke: "#000000" })
       .attr("stroke-width", 2);
 
     // The T Symbol
@@ -809,7 +812,7 @@ class GraphEditor extends Component {
         r: globalRadius,
         cx: 75,
         cy: 20,
-        fill: "white",
+        fill: "#FFFFFF",
         class: "node"
       })
       .style("stroke-width", 3);
@@ -925,10 +928,13 @@ class GraphEditor extends Component {
       return a;
     });
 
+    var font = this.font;
+
     textContainers
       .each(function(d, i) {
         d3.select(this)
           .selectAll("text")
+          .style("font-family", font)
           .style("font-size", d.textSize + "px")
           .style("fill", d.textColor)
           .attr("y", (_, i) => d.textSize * i + (d.textSize - 12) + "px");
@@ -988,7 +994,7 @@ class GraphEditor extends Component {
         ry: 6,
         width: d => d.width + "px",
         height: d => d.height + "px",
-        fill: "white"
+        fill: "#FFFFFF"
       })
       .style("stroke-width", 2)
       .attr("stroke", function(d) {
@@ -1142,6 +1148,7 @@ class GraphEditor extends Component {
   };
 
   changeAttribute = (objectType, objectAttribute, newAttributeValue) => {
+    console.log(objectAttribute, newAttributeValue);
     var prevAttributeValue = this["selected" + objectType][objectAttribute];
     this["selected" + objectType][objectAttribute] = newAttributeValue;
     var command = {
@@ -1337,52 +1344,77 @@ class GraphEditor extends Component {
 
   toggleViewTextButton = () => {
     var globalRadius = 35;
+    var font = this.font;
     if (this.state.shouldViewText) {
       d3.selectAll("g.circleGroup")
         .selectAll("foreignObject")
         .remove();
     } else {
       d3.selectAll("g.circleGroup").each(function(d, i) {
+        var { url, info, title } = d.storedInfo;
+        url = url.trim();
+        info = info.trim();
+        title = title.trim();
         var textCardContainer = d3
           .select(this)
           .append("foreignObject")
           .style("max-width", "200px")
-          .attrs({ x: "-25px", y: "20px", width: "200px", height: "1000px" });
+          .attrs({ x: "-65px", y: "20px", width: "280px", height: "1000px" });
 
-        // max width - min width = padding + border + etc
-        var textCard = textCardContainer
-          .append("xhtml:div")
-          .attrs({ class: "speechBubbleDiv" })
-          .style("min-width", "178px")
-          .style("max-width", "200px");
+        if (url || info || title) {
+          var textCard = textCardContainer
+            .append("xhtml:div")
+            .attrs({ class: "speechBubbleDiv" })
+            .style("font-family", font);
 
-        var textInfo = textCard
-          .append("xhtml:p")
-          .html(d.storedInfo.info)
-          .style("font-size", "13px");
+          var triangle = textCardContainer
+            .append("xhtml:div")
+            .attrs({ class: "triangleDiv" });
+        }
+        if (d.storedInfo.title)
+          var textTitle = textCard
+            .append("xhtml:p")
+            .attr("class", "previewCardTitle")
+            .html(d.storedInfo.title);
 
-        var triangle = textCardContainer
-          .append("xhtml:div")
-          .attrs({ class: "triangleDiv" });
-        var ay = d3.select(".gContainer").attr("transform");
+        if (d.storedInfo.info)
+          var textInfo = textCard
+            .append("xhtml:p")
+            .attr("class", "previewCardDescription")
+            .html(d.storedInfo.info);
 
-        var scaleToMultiplyBy;
-        if (!ay) {
-          scaleToMultiplyBy = 1;
-        } else if (ay.indexOf("scale(") === -1) {
-          scaleToMultiplyBy = 1;
-        } else {
-          scaleToMultiplyBy = ay.substring(
-            ay.indexOf("scale(") + 6,
-            ay.lastIndexOf(")")
-          );
+        if (d.storedInfo.url) {
+          var span = textCard
+            .append("xhtml:a")
+            .attr("class", "description url")
+            .html(d => "Open Link New Tab")
+            .attr("href", d.storedInfo.url)
+            .attr("target", "_blank");
+
+          span.append("xhtml:i").attr("class", "fas fa-globe");
         }
 
-        var bound = textCard.node().getBoundingClientRect();
+        if (url || title || info) {
+          var ay = d3.select(".gContainer").attr("transform");
 
-        textCardContainer.attrs({
-          height: (bound.height * 1) / scaleToMultiplyBy + 10 + "px"
-        });
+          var scaleToMultiplyBy;
+          if (!ay) {
+            scaleToMultiplyBy = 1;
+          } else if (ay.indexOf("scale(") === -1) {
+            scaleToMultiplyBy = 1;
+          } else {
+            scaleToMultiplyBy = ay.substring(
+              ay.indexOf("scale(") + 6,
+              ay.lastIndexOf(")")
+            );
+          }
+
+          var bound = textCard.node().getBoundingClientRect();
+
+          textCardContainer.attrs({
+            height: (bound.height * 1) / scaleToMultiplyBy + 10 + "px"
+          });
+        }
       });
     }
 
@@ -1473,28 +1505,102 @@ class GraphEditor extends Component {
     }
   };
 
-  render() {
-    let errDisplay = (
-      <div className="errMsginner">
-        <span style={{ color: "white" }} id="errMsg">
-          {this.state.errMsg}
-        </span>
-      </div>
-    );
+  setGlobalBackground = color => {
+    this.backgroundColor = color;
+  };
 
-    if (this.state.errMsg === "") {
-      errDisplay = null;
+  setGlobalFont = font => {
+    this.font = font;
+    this.restart();
+  };
+
+  hideCard = (eventTarget, wheelType) => {
+    var cardToHide =
+      wheelType === "palette"
+        ? d3.select(".colorCardContainer")
+        : d3.select(".metaCardContainer");
+
+    if (d3.select(eventTarget).style("transform") === "rotate(90deg)") {
+      d3.select(eventTarget)
+        .transition()
+        .duration(750)
+        .style("transform", "rotate(0deg)")
+        .on("end", () => {
+          this.setState({ isCardHidden: !this.state.isCardHidden });
+        });
+      cardToHide
+        .style("opacity", 0)
+        .transition()
+        .duration(750)
+        .style("opacity", 1);
+    } else if (d3.select(eventTarget).style("transform") === "rotate(0deg)") {
+      d3.select(eventTarget)
+        .transition()
+        .duration(750)
+        .style("transform", "rotate(90deg)")
+        .on("end", () => {
+          this.setState({ isCardHidden: !this.state.isCardHidden });
+        });
+
+      cardToHide
+        .style("opacity", 1)
+        .transition()
+        .duration(750)
+        .style("opacity", 0);
     }
+  };
+  render() {
     return (
       <React.Fragment>
-        <div id="editorsContainer" className="">
+        <div
+          id="editorsContainer"
+          className=""
+          onClick={() => {
+            this.setState({
+              errorMessages: [...this.state.errorMessages, "new message yo"]
+            });
+            var div = d3
+              .select(".errorMessageContainer")
+              .append("div")
+              .lower()
+              .attr("class", "errorMessage")
+              .html("This is like an actual message length");
+
+            div.append("xhtml:i").attr("class", "fa fa-ban");
+
+            div
+              .style("opacity", 0)
+              .transition()
+              .duration(750)
+              .style("opacity", 1);
+
+            setTimeout(function() {
+              div
+                .transition()
+                .duration(750)
+                //.style("opacity", 0)
+                .on("end", () => {
+                  //div.remove();
+                });
+            }, 3000);
+          }}
+        >
           {this.state.showManual ? (
             <Manual toggleManual={this.toggleManual} />
           ) : null}
           <div className="GraphEditorContainer" />
-          <div className="errMsg">{errDisplay}</div>
+          {this.state.errorMessages.length > 0 ? (
+            <div className="errorMessageContainer"></div>
+          ) : null}
+
           {!this.state.preview && !this.selectedNode && !this.selectedLink ? (
-            <MetaCard />
+            <MetaCard
+              backgroundColor={this.backgroundColor}
+              setGlobalBackground={this.setGlobalBackground}
+              setGlobalFont={this.setGlobalFont}
+              hideCard={this.hideCard}
+              isCardHidden={this.state.isCardHidden}
+            />
           ) : null}
 
           {!this.state.preview && (this.selectedNode || this.selectedLink) ? (
@@ -1508,11 +1614,8 @@ class GraphEditor extends Component {
                     : null
                 }
                 changeAttribute={this.changeAttribute}
-              />
-              <img
-                className="colorCardToggle"
-                src={colorPalette}
-                onClick={this.colorPaletteClick}
+                hideCard={this.hideCard}
+                isCardHidden={this.state.isCardHidden}
               />
             </div>
           ) : null}
@@ -1523,20 +1626,16 @@ class GraphEditor extends Component {
             >
               <a className="fancy-button pop-onhover bg-gradient1">
                 {this.state.shouldViewText ? (
-                  <span>Hide All Resource Node Texts</span>
+                  <span className="toggleAllTextButton">
+                    Hide All Resource Node Texts
+                  </span>
                 ) : (
-                  <span>View All Resource Node Texts</span>
+                  <span className="toggleAllTextButton">
+                    View All Resource Node Texts
+                  </span>
                 )}
               </a>
             </div>
-          ) : null}
-
-          {this.state.preview &&
-          this.selectedNode &&
-          this.selectedNode.type === "circle" ? (
-            <React.Fragment>
-              <PreviewCard node={this.selectedNode.storedInfo} />
-            </React.Fragment>
           ) : null}
 
           {this.showModal ? (

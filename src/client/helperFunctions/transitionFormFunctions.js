@@ -11,6 +11,7 @@ import { onTransitionNodeClick } from "./mouseFunctions.js";
 
 export function closeForm(app) {
   d3.select("#currentInput")
+    .style("overflow", "hidden")
     .transition()
     .duration(500)
     .style("width", "0px")

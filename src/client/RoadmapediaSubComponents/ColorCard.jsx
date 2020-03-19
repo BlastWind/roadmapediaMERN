@@ -1,14 +1,41 @@
 import * as d3 from "d3";
 import React, { Component } from "react";
 import "../styles/ColorCard.css";
+import colorPalette from "../svgs/color-palette.svg";
 
 export default class ColorCard extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { textSize: this.props.textSize };
+    this.state = {
+      textSize: this.props.textSize,
+      backgroundColor: this.props.selectedNode
+        ? this.props.selectedNode.backgroundColor
+        : null,
+      strokeColor: this.props.selectedNode
+        ? this.props.selectedNode.strokeColor
+        : null,
+      textColor: this.props.selectedNode
+        ? this.props.selectedNode.textColor
+        : null,
+      linkColor: this.props.selectedLink
+        ? this.props.selectedLink.linkColor
+        : null
+    };
   }
   componentWillReceiveProps(newProps) {
-    this.setState({ textSize: newProps.textSize });
+    this.setState({
+      textSize: newProps.textSize
+    });
+
+    if (newProps.selectedNode) {
+      this.setState({
+        backgroundColor: newProps.selectedNode.backgroundColor,
+        strokeColor: newProps.selectedNode.strokeColor,
+        textColor: newProps.selectedNode.textColor
+      });
+    } else if (newProps.selectedLink) {
+      this.setState({ linkColor: newProps.selectedLink.linkColor });
+    }
   }
 
   textSizeDecrement = () => {
@@ -54,37 +81,74 @@ export default class ColorCard extends React.Component {
     this.setState({ textSize: e.target.value });
   };
 
+  colorPaletteClick = e => {
+    this.props.hideCard(e.target, "palette");
+  };
+
+  onColorInputChange = e => {
+    this.setState({ [e.target.id]: e.target.value });
+  };
+
+  onColorInputSubmit = e => {
+    function isHexColor(str) {
+      var regexp = /^[0-9a-fA-F]+$/;
+      if (regexp.test(str)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    let color = e.target.value
+      .trim()
+      .replace("#", "")
+      .toUpperCase();
+    if (isHexColor(color)) {
+      this.props.changeAttribute(
+        e.target.id.includes("link") ? "Link" : "Node",
+        e.target.id,
+        "#" + color
+      );
+    } else {
+      this.setState({
+        [e.target.id]: this.props.selectedNode
+          ? this.props.selectedNode[e.target.id]
+          : this.props.selectedLink[e.target.id]
+      });
+      console.log(":(");
+    }
+  };
   render() {
     //need 15
-    // 4 for black to white
+    // 4 for black to #FFFFFF
     // others for
     var colorArray = [
-      "black",
-      "#737373",
-      "#a6a6a6",
-      "white",
-      "#ff1616",
-      "#ff66c4",
-      "#cb6ce6",
-      "#5e17eb",
-      "#03989e",
-      "#5ce1e6",
-      "#38b6ff",
-      "#004aad",
-      "#008037",
-      "#c9e265",
-      "#ffde59",
-      "#ff914d"
+      "#FF6900",
+      "#FCB900",
+      "#7BDCB5",
+      "#00D084",
+      "#8ED1FC",
+      "#0693E3",
+      "#EB144C",
+      "#F78DA7",
+
+      "#FFFFFF",
+      "#000000"
     ];
     var selectedNode = this.props.selectedNode;
     var selectedLink = this.props.selectedLink;
-    var selectedBackgroundColor, selectedStrokeColor, selectedTextColor;
+    var selectedBackgroundColor,
+      selectedStrokeColor,
+      selectedTextColor,
+      selectedLinkColor;
     const backgroundColorArray = colorArray;
     const strokeColorArray = colorArray;
     if (selectedNode) {
-      selectedBackgroundColor = this.props.selectedNode.backgroundColor;
-      selectedStrokeColor = this.props.selectedNode.strokeColor;
-      selectedTextColor = this.props.selectedNode.textColor;
+      selectedBackgroundColor = this.state.backgroundColor;
+      selectedStrokeColor = this.state.strokeColor;
+      selectedTextColor = this.state.textColor;
+    }
+    if (selectedLink) {
+      selectedLinkColor = this.state.linkColor;
     }
 
     var cardType = null;
@@ -112,6 +176,18 @@ export default class ColorCard extends React.Component {
                 ></div>
               )
             )}
+          </div>
+          <span className="hexText">HEX</span>
+          <div className="colorInputContainer">
+            <input
+              spellcheck="false"
+              value={selectedTextColor}
+              className="colorInput"
+              id="textColor"
+              maxLength="7"
+              onChange={this.onColorInputChange}
+              onBlur={this.onColorInputSubmit}
+            />
           </div>
           <div>
             <a className="colorCardA">Text Size</a>
@@ -153,7 +229,12 @@ export default class ColorCard extends React.Component {
       cardType = "colorCardContainer path";
     }
     const nodeCard = (
-      <div className={cardType}>
+      <div
+        className={cardType}
+        style={{
+          opacity: this.props.isCardHidden ? 0 : 1
+        }}
+      >
         <div className="colorCardContainerInner">
           <div>
             <a className="colorCardA">Background Color</a>
@@ -163,7 +244,9 @@ export default class ColorCard extends React.Component {
               eachColor === selectedBackgroundColor ? (
                 <div
                   className="backgroundColorBlock selected"
-                  style={{ backgroundColor: eachColor }}
+                  style={{
+                    backgroundColor: eachColor
+                  }}
                 ></div>
               ) : (
                 <div
@@ -176,6 +259,19 @@ export default class ColorCard extends React.Component {
               )
             )}
           </div>
+          <span className="hexText">HEX</span>
+          <div className="colorInputContainer">
+            <input
+              spellcheck="false"
+              value={selectedBackgroundColor}
+              className="colorInput"
+              id="backgroundColor"
+              maxLength="7"
+              onChange={this.onColorInputChange}
+              onBlur={this.onColorInputSubmit}
+            />
+          </div>
+
           <div>
             <a className="colorCardA">Stroke Color</a>
           </div>
@@ -184,12 +280,17 @@ export default class ColorCard extends React.Component {
               eachColor === selectedStrokeColor ? (
                 <div
                   className="strokeColorBlock selected"
-                  style={{ backgroundColor: eachColor }}
+                  style={{
+                    backgroundColor: eachColor
+                  }}
                 ></div>
               ) : (
                 <div
                   className="strokeColorBlock"
-                  style={{ backgroundColor: eachColor }}
+                  style={{
+                    backgroundColor: eachColor,
+                    border: eachColor === "#FFFFFF" ? "1px solid grey" : null
+                  }}
                   onClick={() => {
                     this.changeColor("strokeColor", eachColor);
                   }}
@@ -197,34 +298,66 @@ export default class ColorCard extends React.Component {
               )
             )}
           </div>
+          <span className="hexText">HEX</span>
+          <div className="colorInputContainer">
+            <input
+              id="strokeColor"
+              spellcheck="false"
+              value={selectedStrokeColor}
+              className="colorInput"
+              maxLength="7"
+              onChange={this.onColorInputChange}
+              onBlur={this.onColorInputSubmit}
+            />
+          </div>
           {textContent}
         </div>
       </div>
     );
     const pathCard = (
       <React.Fragment>
-        <div className={"colorCardContainer path"}>
+        <div
+          className="colorCardContainer path"
+          style={{
+            opacity: this.props.isCardHidden ? 0 : 1
+          }}
+        >
           <div className="colorCardContainerInner">
             <div>
               <a className="colorCardA">Path Color</a>
             </div>
             <div className="backgroundColorGrid">
               {backgroundColorArray.map(eachColor =>
-                eachColor === selectedBackgroundColor ? (
+                eachColor === selectedLinkColor ? (
                   <div
                     className="backgroundColorBlock selected"
-                    style={{ backgrounColor: eachColor }}
+                    style={{ backgroundColor: eachColor }}
                   ></div>
                 ) : (
                   <div
                     className="backgroundColorBlock"
-                    style={{ backgroundColor: eachColor }}
+                    style={{
+                      backgroundColor: eachColor,
+                      border: eachColor === "#FFFFFF" ? "1px solid grey" : null
+                    }}
                     onClick={() => {
                       this.changeLinkColor(eachColor);
                     }}
                   ></div>
                 )
               )}
+            </div>
+            <span className="hexText">HEX</span>
+            <div className="colorInputContainer">
+              <input
+                spellcheck="false"
+                value={selectedLinkColor}
+                className="colorInput"
+                id="linkColor"
+                maxLength="7"
+                onChange={this.onColorInputChange}
+                onBlur={this.onColorInputSubmit}
+              />
             </div>
           </div>
         </div>
@@ -233,6 +366,20 @@ export default class ColorCard extends React.Component {
     return (
       <React.Fragment>
         {this.props.selectedNode ? nodeCard : pathCard}
+        <img
+          className={
+            this.props.isCardHidden
+              ? "colorCardToggle hidden"
+              : "colorCardToggle"
+          }
+          src={colorPalette}
+          onClick={this.colorPaletteClick}
+          style={{
+            transform: this.props.isCardHidden
+              ? "rotate(90deg)"
+              : "rotate(0deg)"
+          }}
+        />
       </React.Fragment>
     );
   }

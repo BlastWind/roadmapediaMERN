@@ -12,7 +12,7 @@
   transform: translateY(-50%);
   right: 0;
   height: auto;
-  background-color: white;
+  background-color: #FFFFFF;
   box-shadow: 0px 0px 5px grey;
   border-radius: 25px;
   user-select: none;
@@ -27,9 +27,13 @@
   margin-top: 1em;
   padding-left: 1em;
   padding-bottom: 1em;
-  border-bottom: 1px solid #8080804d;
+  border-bottom: 1px solid #d2d2d24d;
   font-weight: bold;
   margin-bottom: 0.5em;
+}
+
+.metaCardInfoContainer,.metaCardMetaText {
+  overflow: hidden;
 }
 
 .metaCardInput {
@@ -47,7 +51,7 @@
 .roadmapPublishButtonContainer {
   text-align: center;
   padding-top: 1em;
-  transform: translateY(5px);
+  padding-bottom: 2rem;
 }
 
 .roadmapPublishButton {
@@ -59,7 +63,7 @@
   /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   padding: 0.75em 1em 0.75em 1em;
   border-radius: 20px;
-  color: white;
+  color: #FFFFFF;
   cursor: pointer;
 }
 
@@ -73,11 +77,11 @@ img {
   top: 3.5em;
   left: -2.25em;
   cursor: pointer;
-  margin-top: -2px;
+  margin-top: -4px;
 }
 .metaCardTabContainer {
   box-shadow: 0px 0px 5px #ccc;
-  background: white;
+  background: #FFFFFF;
   border-radius: 3px;
   padding: 0.75em 0.5em 0.75em 0.5em;
   margin-bottom: 0.5em;
@@ -96,7 +100,7 @@ select {
   outline: 0;
   box-shadow: none;
   border: 0 !important;
-  background: white;
+  background: #FFFFFF;
   background-image: none;
 }
 /* Remove IE arrow */
@@ -110,7 +114,7 @@ select::-ms-expand {
   box-shadow: 0px 0px 5px #ccc;
   height: 3em;
   line-height: 3;
-  background: white;
+  background: #FFFFFF;
   overflow: hidden;
   border-radius: 0.25em;
 }
@@ -127,7 +131,7 @@ select {
   top: 0;
   right: 0;
   padding: 0 1em;
-  background: white;
+  background: #FFFFFF;
   cursor: pointer;
   pointer-events: none;
   -webkit-transition: 0.25s all ease;

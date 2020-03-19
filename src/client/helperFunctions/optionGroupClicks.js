@@ -31,11 +31,11 @@ export function setOptionGroupTextMouseEvents(app, optionGroupT) {
           text: [""],
           x: app.selectedNode.x + app.selectedNode.width + 100,
           y: app.selectedNode.y,
-          backgroundColor: "white",
-          strokeColor: "black",
+          backgroundColor: "#FFFFFF",
+          strokeColor: "#000000",
           groupID: null,
           textSize: 15,
-          textColor: "black"
+          textColor: "#000000"
         };
         app.point = null;
         app.nodes.push(node);
@@ -80,11 +80,11 @@ export function setOptionGroupTextMouseEvents(app, optionGroupT) {
           text: [""],
           x: app.point[0],
           y: app.point[1],
-          backgroundColor: "white",
-          strokeColor: "black",
+          backgroundColor: "#FFFFFF",
+          strokeColor: "#000000",
           groupID: null,
           textSize: 15,
-          textColor: "black"
+          textColor: "#000000"
         };
         app.point = null;
         app.nodes.push(node);
@@ -139,8 +139,8 @@ export function setOptionGroupLinkMouseEvents(app, optionGroupLink) {
             picture: "",
             title: ""
           },
-          backgroundColor: "white",
-          strokeColor: "black",
+          backgroundColor: "#FFFFFF",
+          strokeColor: "#000000",
           groupID: null
         };
         app.point = null;
@@ -192,8 +192,8 @@ export function setOptionGroupLinkMouseEvents(app, optionGroupLink) {
             picture: "",
             title: ""
           },
-          backgroundColor: "white",
-          strokeColor: "black",
+          backgroundColor: "#FFFFFF",
+          strokeColor: "#000000",
           groupID: null
         };
         app.point = null;

@@ -36,7 +36,6 @@ export function restartOptionG(app) {
   var selectedNode = app.selectedNode;
 
   if (app.selectedNode) {
-
     app.transitionGs = app.optionG.selectAll("g").data(app.transitionGDataset);
 
     if (app.shouldTransitionGsAnimate === true) {
@@ -72,14 +71,10 @@ export function restartOptionG(app) {
       });
     }
 
-    var transitionCircles = app.transitionGsEnter
-      .append("circle")
-      .attrs({
-        r: 0,
-        fill: "white",
-        class: "permanent"
-      })
-      .style("stroke", "black");
+    var transitionCircles = app.transitionGsEnter.append("circle").attrs({
+      r: 0,
+      class: "permanent"
+    });
 
     var transitionImages = app.transitionGsEnter.append("svg:image").attrs({
       width: 0,

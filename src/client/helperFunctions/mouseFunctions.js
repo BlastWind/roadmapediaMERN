@@ -252,8 +252,7 @@ export function circleNodeClick(d, iClicked, DOMEle, app) {
             .append("circle")
             .attr("class", "temp")
             .attr("r", 0)
-            .attr("fill", "white")
-            .style("stroke", "black");
+            .attr("fill", "#FFFFFF");
 
           var transitionImages = newGs
             .append("svg:image")
@@ -430,7 +429,7 @@ export function onTransitionNodeClick(dClicked, iClicked, list, DOMEle, app) {
     .lower()
     .attrs({
       width: 175,
-      height: 50,
+      height: 60,
       x: globalRadius
     });
 
@@ -459,14 +458,14 @@ export function onTransitionNodeClick(dClicked, iClicked, list, DOMEle, app) {
       app.transitionForm = app.optionG
         .select("foreignObject")
         .attrs({
-          y: i === 1 ? -17.5 : -10
+          y: i === 1 ? -30 : -11.5
         })
         .append("xhtml:textarea");
     } else {
       app.transitionForm = app.optionG
         .select("foreignObject")
         .attrs({
-          y: i === 1 ? -17.5 : -10
+          y: i === 1 ? -30 : -11.5
         })
         .append("xhtml:input");
     }
@@ -515,6 +514,9 @@ export function onTransitionNodeClick(dClicked, iClicked, list, DOMEle, app) {
         }
       })
       .style("padding-right", "0px")
+      .on("focus", function() {
+        app.svg.on(".zoom", null);
+      })
       .on("blur", function() {
         var zoom = d3.zoom().on("zoom", function() {
           app.container.attr("transform", d3.event.transform);
@@ -528,10 +530,13 @@ export function onTransitionNodeClick(dClicked, iClicked, list, DOMEle, app) {
     app.transitionForm
       .transition()
       .duration(500)
+      .style("overflow", "hidden")
       .style("width", "150px")
       .style("padding-right", "15px")
       .style("padding-left", "5px")
       .on("end", function() {
+        d3.select(this).style("overflow", "auto");
+
         if (!app.showModal)
           d3.select(this)
             .node()
@@ -777,6 +782,7 @@ export function textNodeDblClick(rectData, i, DOMEle, app) {
     .style("width", "5000%")
     .style("outline", "none")
     .style("font", rectData.textSize + "px " + rectData.textFont)
+    .style("font-family", app.font)
     .style("line-height", rectData.textSize + "px")
     .style("display", "block")
     .style("border", "none")
