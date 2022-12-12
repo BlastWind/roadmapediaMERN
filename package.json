@@ -18,7 +18,7 @@
     "cheerio": "^1.0.0-rc.3",
     "d3": "^5.15.0",
     "d3-selection-multi": "^1.0.1",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "mongoose": "^5.9.2",
     "passport": "^0.4.1",
     "react": "^16.5.2",
